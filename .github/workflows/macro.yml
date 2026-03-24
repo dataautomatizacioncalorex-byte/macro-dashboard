@@ -8,8 +8,10 @@ on:
 jobs:
   run-script:
     runs-on: ubuntu-latest
+    # ESTO ES LO QUE FALTA: Le da permiso total al robot para escribir
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - name: Descargar repo
@@ -37,10 +39,10 @@ jobs:
           
           git add Macro_Master_Historico.xlsx
           
-          # AQUÍ ESTABA EL ERROR (Ya corregido de city a then)
+          # Solo hacemos commit si hay cambios reales
           if ! git diff --cached --quiet; then
             git commit -m "Auto-update: $(date +'%Y-%m-%d')"
             git push origin main --force
           else
-            echo "Sin cambios nuevos. Todo al día."
+            echo "Sin cambios detectados."
           fi
