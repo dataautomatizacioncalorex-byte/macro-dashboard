@@ -15,8 +15,8 @@ jobs:
       - name: Descargar repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.MI_TOKEN_SECRETO }}
-          fetch-depth: 0
+          # Usamos el token por defecto de GitHub para evitar errores de permisos externos
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Instalar Python
         uses: actions/setup-python@v5
@@ -30,9 +30,8 @@ jobs:
       - name: Ejecutar script
         run: python macro_pipeline.py
 
-      - name: Guardar Excel Automáticamente
-        # Cambiamos a la versión v4 que es la más estable
+      - name: Guardar Cambios Automáticamente
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Auto-update Macro Data: $(date +'%Y-%m-%d')"
+          commit_message: "Auto-update Macro Data"
           file_pattern: 'Macro_Master_Historico.xlsx'
