@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.MI_TOKEN_SECRETO }}
-          fetch-depth: 0 # Descarga toda la historia para evitar conflictos
+          fetch-depth: 0
 
       - name: Instalar Python
         uses: actions/setup-python@v5
@@ -35,13 +35,12 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # FORZAMOS LA ACTUALIZACIÓN
           git add Macro_Master_Historico.xlsx
           
-          # Si hay algo que guardar, lo hacemos a la fuerza
+          # AQUÍ ESTABA EL ERROR (Ya corregido de city a then)
           if ! git diff --cached --quiet; then
             git commit -m "Auto-update: $(date +'%Y-%m-%d')"
             git push origin main --force
           else
-            echo "Sin cambios nuevos."
+            echo "Sin cambios nuevos. Todo al día."
           fi
