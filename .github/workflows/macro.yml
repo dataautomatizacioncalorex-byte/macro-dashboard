@@ -5,7 +5,6 @@ on:
     - cron: '0 14 * * *'  # 8 AM México aprox
   workflow_dispatch:
 
-# ESTO ES LO QUE FALTA EN TU CAPTURA:
 permissions:
   contents: write
 
@@ -35,12 +34,9 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 1. Sincronizar con la nube para evitar el [rejected]
+          # Sincronizamos para evitar el error de "rejected"
           git pull origin main --rebase
           
-          # 2. Agregar el archivo específico (o todos con .)
           git add Macro_Master_Historico.xlsx
-          
-          # 3. Commit y Push
           git commit -m "Auto-update: $(date +'%Y-%m-%d')" || echo "Sin cambios"
           git push origin main
