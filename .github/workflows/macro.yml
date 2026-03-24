@@ -9,12 +9,13 @@ jobs:
   run-script:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write  # Permiso explícito para escribir
 
     steps:
       - name: Descargar repo
         uses: actions/checkout@v4
         with:
+          # Usamos el token interno, no el secreto manual
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
@@ -35,11 +36,10 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Agregamos el archivo
           git add Macro_Master_Historico.xlsx
           
-          # Intentamos hacer el commit
+          # Hacemos el commit. Si no hay cambios, no pasa nada.
           git commit -m "Auto-update: $(date +'%Y-%m-%d')" || echo "Sin cambios"
           
-          # EL TRUCO: Forzamos la subida ignorando conflictos
-          git push origin main --force
+          # Intentamos subirlo
+          git push origin main
