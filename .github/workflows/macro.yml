@@ -8,10 +8,8 @@ on:
 jobs:
   run-script:
     runs-on: ubuntu-latest
-    # ESTO ES LO QUE FALTA: Le da permiso total al robot para escribir
     permissions:
       contents: write
-      pull-requests: write
 
     steps:
       - name: Descargar repo
@@ -37,12 +35,18 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
+          # 1. Forzamos la descarga de la rama main para que no haya dudas
+          git fetch origin main
+          git checkout main
+          
+          # 2. Agregamos el archivo
           git add Macro_Master_Historico.xlsx
           
-          # Solo hacemos commit si hay cambios reales
-          if ! git diff --cached --quiet; then
+          # 3. Hacemos el commit. Si no hay cambios, no pasa nada.
+          if [ -n "$(git status --porcelain)" ]; then
             git commit -m "Auto-update: $(date +'%Y-%m-%d')"
+            # 4. El PUSH FORZADO es la clave aquí
             git push origin main --force
           else
-            echo "Sin cambios detectados."
+            echo "Sin cambios detectados en el Excel."
           fi
