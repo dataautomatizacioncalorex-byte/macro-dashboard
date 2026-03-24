@@ -1,10 +1,32 @@
-name: Reset Total
+name: Macro Pipeline Ariston
 on:
+  schedule:
+    - cron: '0 14 * * *'
   workflow_dispatch:
 
 jobs:
-  check:
+  run-script:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
-      - name: Test
-        run: echo "Si esto falla, GitHub tiene un problema conmigo"
+      - name: Descargar repo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Librerias
+        run: pip install pandas yfinance requests openpyxl lxml
+
+      - name: Ejecutar Script
+        run: python macro_pipeline.py
+
+      - name: Guardar Excel
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Auto-update Macro"
+          file_pattern: 'Macro_Master_Historico.xlsx'
