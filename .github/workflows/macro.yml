@@ -3,14 +3,14 @@
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 1. Aseguramos que tenemos lo último
-          git fetch origin main
+          # 1. Bajamos lo que hay en la nube y mezclamos con lo nuevo
+          git pull origin main --rebase
           
-          # 2. Agregamos el archivo
+          # 2. Agregamos el Excel generado por el script
           git add Macro_Master_Historico.xlsx
           
-          # 3. Intentamos commit
-          git commit -m "Auto-update: $(date +'%Y-%m-%d')" || echo "No hay cambios"
+          # 3. Guardamos el cambio
+          git commit -m "Auto-update: $(date +'%Y-%m-%d')" || echo "Sin cambios"
           
-          # 4. PUSH CON FUERZA (Esto rompe el ciclo de errores)
-          git push origin main --force
+          # 4. Subimos de forma normal
+          git push origin main
