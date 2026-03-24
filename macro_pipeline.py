@@ -5,10 +5,10 @@ import os
 from datetime import datetime, timedelta
 
 # =====================================
-# 1. CONFIGURACIÓN (TUS LLAVES Y FECHAS)
+# 1. CONFIGURACIÓN
 # =====================================
 BMX_TOKEN = "8c96d3ef981e1ca6847ad7c17802fb95f732b3625457f93932f62133b538b658"
-FECHA_INICIO = "2025-01-01"  # Empezamos desde el inicio de este año
+FECHA_INICIO = "2025-01-01"  # Histórico desde inicio de año
 FECHA_FIN = datetime.today().strftime("%Y-%m-%d")
 
 bmx_series = {
@@ -24,10 +24,10 @@ yahoo_tickers = {
 }
 
 # =====================================
-# 2. FUNCIÓN PARA DATOS MACRO (BANXICO Y YAHOO)
+# 2. FUNCIÓN DATOS MACRO
 # =====================================
 def generar_reporte_lorex_bi_v8_2():
-    print("📊 Paso 1: Descargando datos de Banxico y Yahoo Finance...")
+    print("📊 Descargando datos de Banxico y Yahoo Finance...")
     rango = pd.date_range(start=FECHA_INICIO, end=FECHA_FIN)
     df_final = pd.DataFrame({'Fecha': rango})
     headers = {"Bmx-Token": BMX_TOKEN}
@@ -56,22 +56,22 @@ def generar_reporte_lorex_bi_v8_2():
                 df_final = pd.merge(df_final, hist[['Close']], left_on='Fecha', right_index=True, how='left').rename(columns={'Close': nombre})
         except: print(f"❌ Error en Yahoo: {nombre}")
 
-    df_final = df_final.ffill() # Rellenamos fines de semana
+    df_final = df_final.ffill() 
 
     # Variaciones
     cols_macro = [c for c in df_final.columns if c != 'Fecha']
     for col in cols_macro:
         df_final[f'Var_Diaria_{col}'] = df_final[col].pct_change() * 100
 
-    # Guardamos la fecha como texto para que el merge sea fácil
+    # Fecha a texto para el merge
     df_final['Fecha_STR'] = df_final['Fecha'].dt.strftime('%d/%m/%Y')
     return df_final
 
 # =====================================
-# 3. FUNCIÓN PARA FBX (MARÍTIMO)
+# 3. FUNCIÓN FBX
 # =====================================
 def get_fbx():
-    print("🚢 Paso 2: Buscando archivo FBX.xlsx...")
+    print("🚢 Buscando archivo FBX.xlsx...")
     ruta_fbx = "FBX.xlsx" 
     if os.path.exists(ruta_fbx):
         try:
@@ -89,44 +89,47 @@ def get_fbx():
     return pd.DataFrame(columns=["Fecha_STR"])
 
 # =====================================
-# 4. PASO MAESTRO: SUMAR DATOS (ACUMULATIVO)
+# 4. PIPELINE MAESTRO (SUMA DE DATOS)
 # =====================================
 def pipeline_master():
-    print("🚀 Paso 3: Iniciando unión de datos...")
+    print("🚀 Iniciando Pipeline Acumulativo...")
     archivo_master = "Macro_Master_Historico.xlsx"
 
-    # Datos descargados hoy
+    # Datos nuevos
     df_actual = generar_reporte_lorex_bi_v8_2()
     df_fbx = get_fbx()
     df_combinado = df_actual.merge(df_fbx, on="Fecha_STR", how="left")
     
-    # Rellenar fletes marítimos
+    # Rellenar marítimos
     cols_fbx = [c for c in ["FBX_Global", "FBX03", "FBX22"] if c in df_combinado.columns]
     if cols_fbx: df_combinado[cols_fbx] = df_combinado[cols_fbx].ffill()
 
-    # --- AQUÍ SE AGREGAN LOS DATOS AL EXCEL EXISTENTE ---
+    # --- AQUÍ SE SUMAN LOS DATOS ---
     if os.path.exists(archivo_master):
-        print("📂 Leyendo histórico previo para sumar datos...")
+        print("📂 Sumando nuevos datos al histórico existente...")
         try:
             df_historico_previo = pd.read_excel(archivo_master, engine='openpyxl')
-            # Pegamos lo que ya teníamos con lo nuevo
+            # Unimos viejo con nuevo
             df_final = pd.concat([df_historico_previo, df_combinado])
-            # Eliminamos duplicados por si acaso corrió dos veces el mismo día
+            # Quitamos duplicados (mantenemos el dato más reciente)
             df_final = df_final.drop_duplicates(subset=["Fecha_STR"], keep="last")
         except:
-            print("⚠️ Error leyendo histórico, se creará uno nuevo.")
+            print("⚠️ No se pudo leer el histórico, creando uno nuevo.")
             df_final = df_combinado
     else:
-        print("🆕 No hay histórico, creando archivo inicial.")
+        print("🆕 Creando archivo inicial...")
         df_final = df_combinado
 
-    # Limpieza final de nombres
+    # Limpieza de columnas
     if 'Fecha' in df_final.columns: df_final = df_final.drop(columns=['Fecha'])
     df_final = df_final.rename(columns={'Fecha_STR': 'Fecha'})
 
-    # Guardar el resultado final
-    df_final.to_excel(archivo_master, index=False, engine='openpyxl')
-    print(f"✅ EXCEL ACTUALIZADO: {archivo_master}")
+    # --- GUARDADO FORZADO ---
+    print(f"💾 Guardando {archivo_master}...")
+    with pd.ExcelWriter(archivo_master, engine='openpyxl') as writer:
+        df_final.to_excel(writer, index=False)
+    
+    print(f"✅ PROCESO COMPLETADO EXITOSAMENTE.")
 
 if __name__ == "__main__":
     pipeline_master()
