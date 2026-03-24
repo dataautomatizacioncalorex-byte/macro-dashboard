@@ -1,49 +1,16 @@
-name: Run Macro Pipeline
-
-on:
-  schedule:
-    - cron: '0 14 * * *'  # 8 AM México aprox
-  workflow_dispatch:
-
-permissions:
-  contents: write
-
-jobs:
-  run-script:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Trae todo el historial para evitar conflictos
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-
-      - name: Run script
-        run: |
-          python macro_pipeline.py
-
-      - name: Save and Push
+- name: Save and Push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 1. Forzamos la actualización de lo que hay en la nube
+          # 1. Aseguramos que tenemos lo último
+          git fetch origin main
+          
+          # 2. Agregamos el archivo
           git add Macro_Master_Historico.xlsx
           
-          # 2. Hacemos el commit
+          # 3. Intentamos commit
           git commit -m "Auto-update: $(date +'%Y-%m-%d')" || echo "No hay cambios"
           
-          # 3. Pull con rebase para que no haya pelea de versiones
-          git pull --rebase origin main
-          
-          # 4. Push final
-          git push origin main
+          # 4. PUSH CON FUERZA (Esto rompe el ciclo de errores)
+          git push origin main --force
