@@ -2,11 +2,8 @@ name: Run Macro Pipeline
 
 on:
   schedule:
-    - cron: '0 14 * * *'  # 8 AM México aprox
+    - cron: '0 14 * * *'
   workflow_dispatch:
-
-permissions:
-  contents: write
 
 jobs:
   run-script:
@@ -15,6 +12,8 @@ jobs:
     steps:
       - name: Descargar repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.MI_TOKEN_SECRETO }} # USA TU TOKEN PERSONAL
 
       - name: Instalar Python
         uses: actions/setup-python@v5
@@ -33,9 +32,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Sincronizamos para evitar el error de "rejected"
-          git pull origin main --rebase
           
           git add Macro_Master_Historico.xlsx
           git commit -m "Auto-update: $(date +'%Y-%m-%d')" || echo "Sin cambios"
