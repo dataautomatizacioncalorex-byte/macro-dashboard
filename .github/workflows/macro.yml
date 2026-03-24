@@ -3,10 +3,10 @@ name: Run Macro Pipeline
 on:
   schedule:
     - cron: '0 14 * * *'  # 8 AM México aprox
-  workflow_dispatch:
+  workflow_dispatch:      # Esto te permite picarle al botón "Run workflow" manualmente
 
 permissions:
-  contents: write  # Crucial para que GitHub pueda guardar el Excel
+  contents: write         # PERMISO VITAL para que GitHub pueda guardar el Excel
 
 jobs:
   run-script:
@@ -31,8 +31,15 @@ jobs:
 
       - name: Commit and Push changes
         run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 1. Traemos cambios remotos para evitar el error de "rejected"
+          git pull origin main --rebase
+          
+          # 2. Agregamos el Excel generado
           git add Macro_Master_Historico.xlsx
+          
+          # 3. Guardamos y subimos
           git commit -m "Auto-update: Macro Data $(date +'%Y-%m-%d')" || echo "No changes to commit"
-          git push
+          git push origin main
