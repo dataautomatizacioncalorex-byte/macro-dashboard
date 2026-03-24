@@ -8,7 +8,6 @@ on:
 jobs:
   run-script:
     runs-on: ubuntu-latest
-    # Permisos reforzados
     permissions:
       contents: write
 
@@ -16,7 +15,7 @@ jobs:
       - name: Descargar repo
         uses: actions/checkout@v4
         with:
-          # Usamos el token automático aquí
+          # Usamos la llave automática del sistema
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Instalar Python
@@ -36,6 +35,3 @@ jobs:
         with:
           commit_message: "Auto-update: $(date +'%Y-%m-%d')"
           file_pattern: 'Macro_Master_Historico.xlsx'
-        env:
-          # ESTO ES LO NUEVO: Inyectamos la llave directo a la acción
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
