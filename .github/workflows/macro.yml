@@ -2,8 +2,8 @@ name: Run Macro Pipeline
 
 on:
   schedule:
-    - cron: '0 14 * * *'
-  workflow_dispatch:
+    - cron: '0 14 * * *'  # 8 AM México aprox
+  workflow_dispatch:      # Permite ejecutarlo manualmente
 
 jobs:
   run-script:
@@ -13,7 +13,7 @@ jobs:
       - name: Descargar repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.MI_TOKEN_SECRETO }} # USA TU TOKEN PERSONAL
+          token: ${{ secrets.MI_TOKEN_SECRETO }} # Usa el Token que creaste
 
       - name: Instalar Python
         uses: actions/setup-python@v5
@@ -22,7 +22,8 @@ jobs:
 
       - name: Instalar librerías
         run: |
-          pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          pip install pandas yfinance requests openpyxl
 
       - name: Ejecutar script
         run: |
@@ -33,6 +34,12 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
+          # Sincronizamos con la nube por si acaso
+          git pull origin main --rebase
+          
+          # Agregamos el reporte generado
           git add Macro_Master_Historico.xlsx
+          
+          # Guardamos y subimos los cambios
           git commit -m "Auto-update: $(date +'%Y-%m-%d')" || echo "Sin cambios"
           git push origin main
