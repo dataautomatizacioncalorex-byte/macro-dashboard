@@ -3,7 +3,7 @@ name: Run Macro Pipeline
 on:
   schedule:
     - cron: '0 14 * * *'  # 8 AM México aprox
-  workflow_dispatch:      # Botón manual
+  workflow_dispatch:      # Ejecución manual
 
 jobs:
   run-script:
@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.MI_TOKEN_SECRETO }}
-          fetch-depth: 0 # Descarga todo el historial para evitar errores de push
+          fetch-depth: 0 # IMPORTANTE: Descarga todo el historial
 
       - name: Instalar Python
         uses: actions/setup-python@v5
@@ -35,15 +35,15 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Sincronizamos forzosamente con la nube
-          git fetch origin main
+          # 1. Nos aseguramos de estar en la rama correcta y traer lo último
           git checkout main
+          git pull origin main --rebase
           
-          # Agregamos el archivo generado
+          # 2. Agregamos el archivo generado
           git add Macro_Master_Historico.xlsx
           
-          # Commit si hay cambios
-          git commit -m "Auto-update: $(date +'%Y-%m-%d')" || echo "Sin cambios"
+          # 3. Guardamos el cambio (si no hay cambios, no falla)
+          git commit -m "Auto-update: $(date +'%Y-%m-%d')" || echo "No hay cambios para guardar"
           
-          # PUSH FORZADO para que no salga el error rojo de conflicto
-          git push origin main --force
+          # 4. Empujamos los cambios
+          git push origin main
