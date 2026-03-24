@@ -8,7 +8,7 @@ on:
 jobs:
   run-script:
     runs-on: ubuntu-latest
-    # Aquí le decimos al código que use los permisos de la imagen que me mandaste
+    # ESTO ES VITAL: Le dice a GitHub que este trabajo TIENE permiso de escribir
     permissions:
       contents: write
 
@@ -16,7 +16,7 @@ jobs:
       - name: Descargar repo
         uses: actions/checkout@v4
         with:
-          # Usamos el token automático, que es el que hereda el "Read and Write"
+          # Usamos el token automático del sistema
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Instalar Python
@@ -36,3 +36,6 @@ jobs:
         with:
           commit_message: "Auto-update: $(date +'%Y-%m-%d')"
           file_pattern: 'Macro_Master_Historico.xlsx'
+          # Esto ayuda a que no se pelee con permisos de usuario
+          commit_user_name: github-actions[bot]
+          commit_user_email: github-actions[bot]@users.noreply.github.com
