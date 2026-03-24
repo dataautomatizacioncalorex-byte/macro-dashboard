@@ -1,8 +1,8 @@
-name: Macro Pipeline Diario
+name: Run Macro Pipeline
 
 on:
   schedule:
-    - cron: '0 14 * * *'  # 8 AM México
+    - cron: '0 14 * * *'  # 8 AM México aprox
   workflow_dispatch:
 
 jobs:
@@ -10,24 +10,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Descargar repo
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4   # 🔥 ACTUALIZADO
 
-    - name: Instalar Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v5   # 🔥 ACTUALIZADO
+        with:
+          python-version: '3.10'
 
-    - name: Instalar librerías
-      run: pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
 
-    - name: Ejecutar script
-      run: python macro_pipeline.py
-
-    - name: Guardar resultados
-      run: |
-        git config --global user.name "bot"
-        git config --global user.email "bot@github.com"
-        git add .
-        git commit -m "Actualización automática macro" || echo "Sin cambios"
-        git push
+      - name: Run script
+        run: |
+          python macro_pipeline.py
