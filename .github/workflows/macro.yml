@@ -3,10 +3,10 @@ name: Run Macro Pipeline
 on:
   schedule:
     - cron: '0 14 * * *'  # 8 AM México aprox
-  workflow_dispatch:      # Esto te permite picarle al botón "Run workflow" manualmente
+  workflow_dispatch:
 
 permissions:
-  contents: write         # PERMISO VITAL para que GitHub pueda guardar el Excel
+  contents: write
 
 jobs:
   run-script:
@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Trae todo el historial para evitar conflictos
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -29,17 +31,19 @@ jobs:
         run: |
           python macro_pipeline.py
 
-      - name: Commit and Push changes
+      - name: Save and Push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 1. Traemos cambios remotos para evitar el error de "rejected"
-          git pull origin main --rebase
-          
-          # 2. Agregamos el Excel generado
+          # 1. Forzamos la actualización de lo que hay en la nube
           git add Macro_Master_Historico.xlsx
           
-          # 3. Guardamos y subimos
-          git commit -m "Auto-update: Macro Data $(date +'%Y-%m-%d')" || echo "No changes to commit"
+          # 2. Hacemos el commit
+          git commit -m "Auto-update: $(date +'%Y-%m-%d')" || echo "No hay cambios"
+          
+          # 3. Pull con rebase para que no haya pelea de versiones
+          git pull --rebase origin main
+          
+          # 4. Push final
           git push origin main
