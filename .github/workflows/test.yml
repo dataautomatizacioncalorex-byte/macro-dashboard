@@ -1,0 +1,10 @@
+name: Reset Total
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test
+        run: echo "Si esto falla, GitHub tiene un problema conmigo"
