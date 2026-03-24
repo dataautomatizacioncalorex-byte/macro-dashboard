@@ -1,16 +1,46 @@
-- name: Save and Push
+name: Run Macro Pipeline
+
+on:
+  schedule:
+    - cron: '0 14 * * *'  # 8 AM México aprox
+  workflow_dispatch:
+
+# ESTO ES LO QUE FALTA EN TU CAPTURA:
+permissions:
+  contents: write
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repo
+        uses: actions/checkout@v4
+
+      - name: Instalar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Instalar librerías
+        run: |
+          pip install -r requirements.txt
+
+      - name: Ejecutar script
+        run: |
+          python macro_pipeline.py
+
+      - name: Guardar resultados
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 1. Bajamos lo que hay en la nube y mezclamos con lo nuevo
+          # 1. Sincronizar con la nube para evitar el [rejected]
           git pull origin main --rebase
           
-          # 2. Agregamos el Excel generado por el script
+          # 2. Agregar el archivo específico (o todos con .)
           git add Macro_Master_Historico.xlsx
           
-          # 3. Guardamos el cambio
+          # 3. Commit y Push
           git commit -m "Auto-update: $(date +'%Y-%m-%d')" || echo "Sin cambios"
-          
-          # 4. Subimos de forma normal
           git push origin main
